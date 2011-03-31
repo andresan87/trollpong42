@@ -54,7 +54,7 @@ class Pong : public BaseApplication
 			size = spriteBar->GetBitmapSizeF();
 		}
 
-		void ballCollide(boost::shared_ptr<ball> m_ball, const math::Vector2 &screenSize, int bar, std::vector<SpritePtr> &ballSprites, InputPtr input) {
+		void ballCollide(boost::shared_ptr<ball> m_ball, const math::Vector2 &screenSize, int bar, std::vector<SpritePtr> &ballSprites) {
 			float leftBall = m_ball->pos.x - m_ball->ballRadius;
 			float rightBall = m_ball->pos.x + m_ball->ballRadius;
 			float bottomBall = m_ball->pos.y + m_ball->ballRadius;
@@ -67,14 +67,9 @@ class Pong : public BaseApplication
 				(bar == 0 && leftBall <= pos.x && m_ball->pos.x < screenSize.x/2)) {
 				if ((topBall >= topBar && topBall <= bottomBar) || (bottomBall >= topBar && bottomBall <= bottomBar)) {				
 					m_ball->dir.x *= -1;
+					m_ball->dir.y += (m_ball->pos.y - pos.y) / size.y;
 					if (m_ball->vel <= 30) {
 						m_ball->vel *= 1.1f;
-					}
-					//std::cout << m_ball->vel << std::endl;
-					for (int x = 0; x <= 1; x++) {
-						if ((bar == 0 && input->GetTouchMove(x).x <= screenSize.x/2) || (bar == 1 && input->GetTouchMove(x).x > screenSize.x/2)) {
-							m_ball->dir.y += input->GetTouchMove(x).y*0.01f;
-						}
 					}
 				}
 				else {

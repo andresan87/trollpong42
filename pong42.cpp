@@ -84,7 +84,7 @@ Application::APP_STATUS Pong::Update(unsigned long lastFrameDeltaTimeMS)
 	m_ball->wallCollide(screenSize);
 
 	for (int t = 0; t <= 1; t++) {
-		m_bar[t]->ballCollide(m_ball, screenSize, t, m_ballSprites, m_input);
+		m_bar[t]->ballCollide(m_ball, screenSize, t, m_ballSprites);
 	}
 
 
