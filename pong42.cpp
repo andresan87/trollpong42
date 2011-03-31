@@ -13,6 +13,7 @@ void Pong::Start(VideoPtr video, InputPtr input, AudioPtr audio)
 {
 	m_video = video;
 	m_input = input;
+
 	m_barSprite = m_video->CreateSprite(GS_L("assets/textures/pong-bar.png"));
 	m_backgroundSprite = m_video->CreateSprite(GS_L("assets/textures/background.png"));
 	m_backgroundSprite->SetOrigin(Vector2(0.5f, 0.5f));
@@ -20,7 +21,8 @@ void Pong::Start(VideoPtr video, InputPtr input, AudioPtr audio)
 	m_dottedSprite = m_video->CreateSprite(GS_L("assets/textures/dotted.png"));
 	m_dottedSprite->SetOrigin(Vector2(0.5f, 0.5f));
 	m_barSprite->SetOrigin(Vector2(0.5f, 0.5f));
-		
+
+	m_ballSprites.clear();
 	for (int x = 0; x < 1; x++) {
 		str_type::stringstream ss;
 		ss << GS_L("assets/textures/") << x << GS_L(".png");
@@ -32,7 +34,6 @@ void Pong::Start(VideoPtr video, InputPtr input, AudioPtr audio)
 	m_ball = boost::shared_ptr<ball>(new ball(m_ballSprites[math::Randomizer::Int(m_ballSprites.size()-1)]));
 	m_bar[0] = boost::shared_ptr<bar>(new bar(m_barSprite));
 	m_bar[1] = boost::shared_ptr<bar>(new bar(m_barSprite));
-
 }
 
 Application::APP_STATUS Pong::Update(unsigned long lastFrameDeltaTimeMS)
@@ -57,7 +58,6 @@ Application::APP_STATUS Pong::Update(unsigned long lastFrameDeltaTimeMS)
 			}
 		}
 	}
-
 
 	for (int t = 0; t <= 1; t++) {
 		int player = -1;
@@ -86,8 +86,6 @@ Application::APP_STATUS Pong::Update(unsigned long lastFrameDeltaTimeMS)
 	for (int t = 0; t <= 1; t++) {
 		m_bar[t]->ballCollide(m_ball, screenSize, t, m_ballSprites, m_input);
 	}
-
-
 	return Application::APP_OK;
 }
 
