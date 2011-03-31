@@ -14,6 +14,11 @@ void Pong::Start(VideoPtr video, InputPtr input, AudioPtr audio)
 	m_video = video;
 	m_input = input;
 	m_barSprite = m_video->CreateSprite(GS_L("assets/textures/pong-bar.png"));
+	m_backgroundSprite = m_video->CreateSprite(GS_L("assets/textures/background.png"));
+	m_backgroundSprite->SetOrigin(Vector2(0.5f, 0.5f));
+
+	m_dottedSprite = m_video->CreateSprite(GS_L("assets/textures/dotted.png"));
+	m_dottedSprite->SetOrigin(Vector2(0.5f, 0.5f));
 	m_barSprite->SetOrigin(Vector2(0.5f, 0.5f));
 		
 	for (int x = 0; x < 1; x++) {
@@ -43,6 +48,17 @@ Application::APP_STATUS Pong::Update(unsigned long lastFrameDeltaTimeMS)
 	}
 
 	Vector2 touch;
+
+	if (m_ball->dir == Vector2(0,0)) {
+		for (int t = 0; t <= 1; t++) {
+			if (m_input->GetTouchState(t) == GSKS_HIT) {
+				const Vector2 touchPos = m_input->GetTouchPos(t, m_video);
+				m_ball->dir = Normalize(touchPos - m_ball->pos);
+			}
+		}
+	}
+
+
 	for (int t = 0; t <= 1; t++) {
 		int player = -1;
 		if ((touch = m_input->GetTouchPos(t, m_video)) != GS_NO_TOUCH) {
@@ -68,7 +84,7 @@ Application::APP_STATUS Pong::Update(unsigned long lastFrameDeltaTimeMS)
 	m_ball->wallCollide(screenSize);
 
 	for (int t = 0; t <= 1; t++) {
-		m_bar[t]->ballCollide(m_ball, screenSize, t, m_ballSprites);
+		m_bar[t]->ballCollide(m_ball, screenSize, t, m_ballSprites, m_input);
 	}
 
 
@@ -78,6 +94,8 @@ Application::APP_STATUS Pong::Update(unsigned long lastFrameDeltaTimeMS)
 void Pong::RenderFrame()
 {
 	m_video->BeginSpriteScene(0xFFEAEAEA);
+	m_backgroundSprite->Draw(m_video->GetScreenSizeF()/2, GS_COLOR(30, 0, 0 , 0), 0, Vector2(4, 4));
+	m_dottedSprite->Stretch(Vector2(m_video->GetScreenSizeF().x/2, 0), Vector2(m_video->GetScreenSizeF().x/2, m_video->GetScreenSizeF().y), 10.0f, GS_BLACK, GS_BLACK);
 	m_barSprite->Draw(m_bar[0]->pos);
 	m_barSprite->Draw(m_bar[1]->pos);
 	m_ball->draw();
