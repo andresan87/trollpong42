@@ -15,7 +15,7 @@ class Pong : public BaseApplication
 		float vel;
 		math::Vector2 dir;
 		SpritePtr sprite;
-		float ballRadius;
+		float ballRadius;		
 		
 		ball(SpritePtr spriteBall) {
 			pos = math::Vector2(-1, -1);
@@ -48,10 +48,12 @@ class Pong : public BaseApplication
 		math::Vector2 pos;
 		SpritePtr sprite;
 		math::Vector2 size;
+		int score ;
 
 		bar(SpritePtr spriteBar) {
 			pos = math::Vector2(-1, -1);
 			size = spriteBar->GetBitmapSizeF();
+			score = 0;
 		}
 
 		void ballCollide(boost::shared_ptr<ball> m_ball, const math::Vector2 &screenSize, int bar, std::vector<SpritePtr> &ballSprites) {
@@ -74,6 +76,7 @@ class Pong : public BaseApplication
 				}
 				else {
 					m_ball->reset(screenSize, 5, ballSprites);
+					score++;
 				}
 			}
 		}

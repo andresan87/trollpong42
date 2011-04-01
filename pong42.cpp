@@ -39,7 +39,7 @@ void Pong::Start(VideoPtr video, InputPtr input, AudioPtr audio)
 Application::APP_STATUS Pong::Update(unsigned long lastFrameDeltaTimeMS)
 {
 	const Vector2 screenSize = m_video->GetScreenSizeF();
-	const float padding = 20;
+	const float padding = 100;
 	const float initialVel = 5;
 	if (m_ball->pos == Vector2(-1, -1)) {		
 		m_ball->reset(screenSize, initialVel, m_ballSprites);
@@ -94,6 +94,18 @@ void Pong::RenderFrame()
 	m_video->BeginSpriteScene(0xFFEAEAEA);
 	m_backgroundSprite->Draw(m_video->GetScreenSizeF()/2, GS_COLOR(30, 0, 0 , 0), 0, Vector2(4, 4));
 	m_dottedSprite->Stretch(Vector2(m_video->GetScreenSizeF().x/2, 0), Vector2(m_video->GetScreenSizeF().x/2, m_video->GetScreenSizeF().y), 10.0f, GS_BLACK, GS_BLACK);
+		
+	for (int x = 0; x <= 1; x++) {
+		str_type::stringstream ss;
+		ss << m_bar[x]->score;
+		int size = 0;
+		if (x == 1) {
+			size = 45 - m_video->ComputeTextBoxSize(GS_L("Arcade80.fnt"), ss.str()).x;
+		}
+		m_video->DrawBitmapText(Vector2(m_video->GetScreenSizeF().x/2 + size + ((x == 0) ? 30:-70), 0), ss.str(), GS_L("Arcade80.fnt"), GS_BLACK);
+		
+	}
+	
 	m_barSprite->Draw(m_bar[0]->pos);
 	m_barSprite->Draw(m_bar[1]->pos);
 	m_ball->draw();
