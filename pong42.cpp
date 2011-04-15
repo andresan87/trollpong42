@@ -1,5 +1,6 @@
 #include "pong42.h" 
 #include <sstream>
+#include "Util.h"
 
 using namespace gs2d;
 using namespace gs2d::math;
@@ -14,102 +15,74 @@ void Pong::Start(VideoPtr video, InputPtr input, AudioPtr audio)
 	m_video = video;
 	m_input = input;
 
-	m_barSprite = m_video->CreateSprite(GS_L("assets/textures/pong-bar.png"));
-	m_backgroundSprite = m_video->CreateSprite(GS_L("assets/textures/background.png"));
-	m_backgroundSprite->SetOrigin(Vector2(0.5f, 0.5f));
+	m_backgroundImage = video->CreateSprite(GS_L("assets/textures/background.png"));
+	m_backgroundImage->SetOrigin(Vector2(0.5f, 0.5f));
 
-	m_dottedSprite = m_video->CreateSprite(GS_L("assets/textures/dotted.png"));
-	m_dottedSprite->SetOrigin(Vector2(0.5f, 0.5f));
-	m_barSprite->SetOrigin(Vector2(0.5f, 0.5f));
+	m_lineSprite = video->CreateSprite(GS_L("assets/textures/dotted.png"));
 
-	m_ballSprites.clear();
-	for (int x = 0; x < 1; x++) {
-		str_type::stringstream ss;
-		ss << GS_L("assets/textures/") << x << GS_L(".png");
-		SpritePtr sprite = m_video->CreateSprite(ss.str());
-		sprite->SetOrigin(Vector2(0.5f, 0.5f));
-		m_ballSprites.push_back(sprite);
-	}
-	
-	m_ball = boost::shared_ptr<ball>(new ball(m_ballSprites[math::Randomizer::Int(m_ballSprites.size()-1)]));
-	m_bar[0] = boost::shared_ptr<bar>(new bar(m_barSprite));
-	m_bar[1] = boost::shared_ptr<bar>(new bar(m_barSprite));
+	m_pawnSprite = video->CreateSprite(GS_L("assets/textures/pawn.png"));
+	m_pawnSprite->SetOrigin(GSEO_CENTER);
+
+	m_ballSprite = video->CreateSprite(GS_L("assets/textures/ball.png"));
+	m_ballSprite->SetOrigin(GSEO_CENTER);
+
+	m_ballHighlight = video->CreateSprite(GS_L("assets/textures/ball_highlight.png"));
+	m_ballHighlight->SetOrigin(GSEO_CENTER);
+
+	m_goalSprite = video->CreateSprite(GS_L("assets/textures/goal.png"));
+	m_goalSprite->SetOrigin(GSEO_CENTER_BOTTOM);
+
+	m_bloodSprite = video->CreateSprite(GS_L("assets/textures/blood01.png"));
+	m_bloodSprite->SetOrigin(GSEO_CENTER);
+	m_bloodSprite->SetupSpriteRects(6, 1);
+
+	m_ball = BallPtr(new Ball(m_ballSprite, m_ballHighlight, video));
+	m_pawnManager = PawnManagerPtr(new PawnManager(video, m_pawnSprite, m_pawnSprite, m_goalSprite, m_ball));
+
+	m_fxManager = EffectManagerPtr(new EffectManager());
+
+	std::vector<SpritePtr> sprites;
+	sprites.push_back(video->CreateSprite(GS_L("assets/textures/zombies/zombie01.png")));
+	sprites.push_back(video->CreateSprite(GS_L("assets/textures/zombies/zombie02.png")));
+	sprites.push_back(video->CreateSprite(GS_L("assets/textures/zombies/zombie03.png")));
+	sprites.push_back(video->CreateSprite(GS_L("assets/textures/zombies/zombie04.png")));
+	m_zombieManager = ZombieManagerPtr(new ZombieManager(video, sprites, m_ball, m_bloodSprite));
 }
 
 Application::APP_STATUS Pong::Update(unsigned long lastFrameDeltaTimeMS)
 {
-	const Vector2 screenSize = m_video->GetScreenSizeF();
-	const float padding = 100;
-	const float initialVel = 5;
-	if (m_ball->pos == Vector2(-1, -1)) {		
-		m_ball->reset(screenSize, initialVel, m_ballSprites);
-		
-		m_bar[0]->pos = Vector2(padding, screenSize.y/2);
-		m_bar[1]->pos = Vector2(screenSize.x - padding, screenSize.y/2);
-	}
-
-	Vector2 touch;
-
-	if (m_ball->dir == Vector2(0,0)) {
-		for (int t = 0; t <= 1; t++) {
-			if (m_input->GetTouchState(t) == GSKS_HIT) {
-				const Vector2 touchPos = m_input->GetTouchPos(t, m_video);
-				m_ball->dir = Normalize(touchPos - m_ball->pos);
-			}
-		}
-	}
-
-	for (int t = 0; t <= 1; t++) {
-		int player = -1;
-		if ((touch = m_input->GetTouchPos(t, m_video)) != GS_NO_TOUCH) {
-			if (touch.x < screenSize.x / 2) {
-				player = 0;
-			}
-			else {
-				player = 1;
-			}
-		}
-		if (player != -1) {
-			m_bar[player]->pos.y += m_input->GetTouchMove(t).y;
-			if (m_bar[player]->pos.y <= 0) {
-				m_bar[player]->pos.y = 0;
-			}
-			else if (m_bar[player]->pos.y >= screenSize.y) {
-				m_bar[player]->pos.y = screenSize.y;
-			}
-		}
-	}
-	m_ball->angle += 1.0f;
-	m_ball->pos += math::Normalize(m_ball->dir) * m_ball->vel;
-	m_ball->wallCollide(screenSize);
-
-	for (int t = 0; t <= 1; t++) {
-		m_bar[t]->ballCollide(m_ball, screenSize, t, m_ballSprites);
-	}
+	m_fxManager->Update(m_video, lastFrameDeltaTimeMS);
+	m_pawnManager->Update(m_video, m_input, m_fxManager);
+	m_ball->Update(m_video, m_input, m_fxManager);
+	m_zombieManager->Update(m_video, m_input, lastFrameDeltaTimeMS, m_fxManager);
 	return Application::APP_OK;
 }
 
 void Pong::RenderFrame()
 {
 	m_video->BeginSpriteScene(0xFFEAEAEA);
-	m_backgroundSprite->Draw(m_video->GetScreenSizeF()/2, GS_COLOR(30, 0, 0 , 0), 0, Vector2(4, 4));
-	m_dottedSprite->Stretch(Vector2(m_video->GetScreenSizeF().x/2, 0), Vector2(m_video->GetScreenSizeF().x/2, m_video->GetScreenSizeF().y), 10.0f, GS_BLACK, GS_BLACK);
-		
-	for (int x = 0; x <= 1; x++) {
-		str_type::stringstream ss;
-		ss << m_bar[x]->score;
-		int size = 0;
-		if (x == 1) {
-			size = 45 - m_video->ComputeTextBoxSize(GS_L("Arcade80.fnt"), ss.str()).x;
-		}
-		m_video->DrawBitmapText(Vector2(m_video->GetScreenSizeF().x/2 + size + ((x == 0) ? 30:-70), 0), ss.str(), GS_L("Arcade80.fnt"), GS_BLACK);
-		
-	}
-	
-	m_barSprite->Draw(m_bar[0]->pos);
-	m_barSprite->Draw(m_bar[1]->pos);
-	m_ball->draw();
+	DrawScenario();
+	m_fxManager->Draw(m_video);
+	m_pawnManager->Draw(m_video);
+	m_ball->Draw(m_video);
+
+	str_type::stringstream ss;
+	ss << m_video->GetFPSRate();
+	m_video->DrawBitmapText(Vector2(0,0), ss.str(), GS_L("Verdana20_shadow.fnt"), GS_COLOR(20,0,0,0));
+
+	m_zombieManager->Draw(m_video);
 	m_video->EndSpriteScene();
+}
+
+void Pong::DrawScenario()
+{
+	const Vector2 screenSize = m_video->GetScreenSizeF();
+	const Vector2 halfScreenSize = screenSize/2.0f;
+
+	m_backgroundImage->Draw(halfScreenSize, GS_COLOR(30, 0, 0, 0), 0, Vector2(2, 2));
+
+	const GS_COLOR lineColor = GS_COLOR(40,0,0,0);
+	m_lineSprite->Stretch(Vector2(halfScreenSize.x, 0), Vector2(halfScreenSize.x, screenSize.y), 22, lineColor, lineColor);
 }
 
 void Pong::Destroy()

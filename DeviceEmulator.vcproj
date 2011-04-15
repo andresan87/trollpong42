@@ -177,11 +177,47 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\Controller.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\EffectManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FrameTimer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GameCharacter.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GameEntity.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\gs2d\src\Platform\main.cpp"
 				>
 			</File>
 			<File
+				RelativePath=".\PawnManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\pong42.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporaryEffect.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Zombie.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ZombieManager.cpp"
 				>
 			</File>
 		</Filter>
@@ -191,7 +227,47 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\Controller.h"
+				>
+			</File>
+			<File
+				RelativePath=".\EffectManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FrameTimer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GameCharacter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GameEntity.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PawnManager.h"
+				>
+			</File>
+			<File
 				RelativePath=".\pong42.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporaryEffect.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Util.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Zombie.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ZombieManager.h"
 				>
 			</File>
 		</Filter>
