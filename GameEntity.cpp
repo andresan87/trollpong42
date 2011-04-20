@@ -3,7 +3,7 @@
 #include "Util.h"
 
 using namespace gs2d;
-using namespace gs2d::math;
+using namespace math;
 
 Vector2 GameEntity::GetPos() const
 {
@@ -15,13 +15,73 @@ void GameEntity::AddToPos(const Vector2& v)
 	m_pos += v;
 }
 
-Ball::Ball(SpritePtr sprite, gs2d::SpritePtr highlight, VideoPtr video) :
+void Ball::TimeBomb::SetArea(const int area)
+{
+	if (area != m_area)
+	{
+		m_area = area;
+		m_elapsedTime = 0;
+	}
+}
+
+Ball::TimeBomb::TimeBomb() :
+	m_elapsedTime(0),
+	BOMB_TIME(10000),
+	NO_AREA(-1),
+	m_area(NO_AREA)
+{
+}
+
+void Ball::TimeBomb::Reset()
+{
+	m_area = NO_AREA;
+	m_elapsedTime = 0;
+}
+
+void Ball::TimeBomb::Update(const Ball* pBall, const unsigned long lastFrameElapsedTimeMS, const int area)
+{
+	if (pBall->GetDir() != Vector2(0, 0))
+		SetArea(area);
+	else
+		Reset();
+	m_elapsedTime += Min(lastFrameElapsedTimeMS, static_cast<unsigned long>(1000));
+}
+
+bool Ball::TimeBomb::MustExplode(const Ball* pBall) const
+{
+	if (pBall->GetDir() != Vector2(0,0))
+		return (m_elapsedTime > BOMB_TIME);
+	else
+		return false;
+}
+
+int Ball::TimeBomb::GetArea() const
+{
+	return m_area;
+}
+
+float Ball::TimeBomb::GetExplosionBiasF() const
+{
+	if (m_area != NO_AREA)
+		return (static_cast<float>(m_elapsedTime) / static_cast<float>(BOMB_TIME));
+	else
+		return 0.0f;
+}
+
+GS_BYTE Ball::TimeBomb::GetExplosionBias() const
+{
+	return static_cast<GS_BYTE>(GetExplosionBiasF() * 255.0f);
+}
+
+Ball::Ball(SpritePtr sprite, SpritePtr highlight, SpritePtr shadowSprite, VideoPtr video) :
 	m_angle(0),
 	m_sprite(sprite),
 	m_highlight(highlight),
 	m_dir(0, 0),
-	m_speed(5.0f),
-	m_lastTouchOwnerId(-1)
+	m_speed(300.0f),
+	m_lastTouchOwnerId(-1),
+	m_shadowSprite(shadowSprite),
+	m_currentArea(-1)
 {
 	m_pos = video->GetScreenSizeF()/2.0f;
 }
@@ -29,6 +89,11 @@ Ball::Ball(SpritePtr sprite, gs2d::SpritePtr highlight, VideoPtr video) :
 void Ball::SetLastTouchOwnerId(const int id)
 {
 	m_lastTouchOwnerId = id;
+}
+
+int Ball::GetCurrentArea() const
+{
+	return m_currentArea;
 }
 
 int Ball::GetTouchOwnerId() const
@@ -51,6 +116,7 @@ void Ball::Reset(VideoPtr video)
 	m_lastTouchOwnerId = -1;
 	m_pos = video->GetScreenSizeF() / 2.0f;
 	m_dir = Vector2(0.0f, 0.0f);
+	m_timeBomb.Reset();
 }
 
 void Ball::LockInside(VideoPtr video)
@@ -67,6 +133,11 @@ void Ball::LockInside(VideoPtr video)
 	Clamp(m_pos, GetRadius(), Rect2Df(Vector2(0,0), video->GetScreenSizeF()));
 }
 
+Vector2 Ball::GetDir() const
+{
+	return m_dir;
+}
+
 float Ball::GetRadius() const
 {
 	return m_sprite->GetBitmapSizeF().x / 2.0f;
@@ -78,15 +149,24 @@ void Ball::Draw(VideoPtr video)
 
 	video->SetAlphaMode(GSAM_ADD);
 	const int angle = static_cast<int>(m_angle) % 10;
-	m_highlight->Draw(m_pos, GS_WHITE, static_cast<float>(angle));
+
+	DrawShadow(video, m_shadowSprite, m_pos, GetRadius());
+	const GS_BYTE explosionColor = 255-m_timeBomb.GetExplosionBias();
+	m_highlight->Draw(m_pos, GS_COLOR(255, 255, explosionColor, explosionColor), static_cast<float>(angle));
 	video->SetAlphaMode(GSAM_PIXEL);
 }
 
-void Ball::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager)
+void Ball::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager, const unsigned long lastFrameElapsedTimeMS)
 {
-	m_pos += Normalize(m_dir) * m_speed;
-	m_angle += (m_speed/video->GetFPSRate()) * 50.0f;
+	m_pos += Normalize(m_dir) * (m_speed/AssertFPS(video));
+	m_angle += (m_speed/AssertFPS(video)) * 49.0f;
 	LockInside(video);
+	m_timeBomb.Update(this, lastFrameElapsedTimeMS, GetCurrentArea());
+}
+
+bool Ball::MustExplode() const
+{
+	return m_timeBomb.MustExplode(this);
 }
 
 Pawn::Goal::Goal(SpritePtr sprite, Vector2 normalizedPos) :
@@ -114,8 +194,8 @@ Vector2 Pawn::Goal::GetNormalizedPos() const
 	return m_normalizedPos;
 }
 
-Pawn::Pawn(gs2d::SpritePtr sprite, const Rect2Df &area, ControllerPtr controller, BallPtr ball,
-		const Vector2& goalNormalizedPos, SpritePtr goalSprite, const int uniqueId) :
+Pawn::Pawn(SpritePtr sprite, const Rect2Df &area, ControllerPtr controller, BallPtr ball,
+		const Vector2& goalNormalizedPos, SpritePtr goalSprite, const int uniqueId, SpritePtr shadowSprite) :
 	m_sprite(sprite),
 	m_area(area),
 	m_controller(controller),
@@ -124,22 +204,24 @@ Pawn::Pawn(gs2d::SpritePtr sprite, const Rect2Df &area, ControllerPtr controller
 	m_uniqueId(uniqueId),
 	m_score(0),
 	m_scoreFont(GS_L("Arcade80.fnt")),
-	m_scorePosOffset(32.0f)
+	m_scorePosOffset(32.0f),
+	m_shadowSprite(shadowSprite)
 {
 	m_pos = Vector2(area.pos + (area.size / 2.0f));
 }
 
-void Pawn::Draw(gs2d::VideoPtr video)
+void Pawn::Draw(VideoPtr video)
 {
+	DrawShadow(video, m_shadowSprite, m_pos, GetRadius());
 	m_sprite->Draw(m_pos);
 }
 
-void Pawn::DrawGoal(gs2d::VideoPtr video)
+void Pawn::DrawGoal(VideoPtr video)
 {
 	m_goal.Draw(video);
 }
 
-void Pawn::DrawScore(gs2d::VideoPtr video)
+void Pawn::DrawScore(VideoPtr video)
 {
 	const Vector2 screenSize(video->GetScreenSizeF());
 	Vector2 pos(screenSize.x / 2.0f, 0.0f);
@@ -154,9 +236,14 @@ void Pawn::DrawScore(gs2d::VideoPtr video)
 	video->DrawBitmapText(pos, ss.str(), m_scoreFont, GS_BLACK);
 }
 
-void Pawn::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager)
+void Pawn::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager, const unsigned long lastFrameElapsedTimeMS)
 {
-	m_controller->Update(this, video, input, fxManager);
+	if (IsInArea(m_ball->m_pos, m_area, Vector2(0.0f, 0.0f)))
+	{
+		m_ball->m_currentArea = m_uniqueId;
+	}
+
+	m_controller->Update(this, video, input, fxManager, lastFrameElapsedTimeMS);
 	DoBallBounce();
 	LockInside();
 }

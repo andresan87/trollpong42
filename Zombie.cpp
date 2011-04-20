@@ -1,17 +1,20 @@
 #include "Zombie.h"
+#include "Util.h"
 
 using namespace gs2d;
 using namespace gs2d::math;
 
-Zombie::Zombie(VideoPtr video, const gs2d::math::Vector2& pos, gs2d::SpritePtr sprite) :
+Zombie::Zombie(VideoPtr video, const Vector2& pos, SpritePtr sprite, SpritePtr shadowSprite) :
 	GameCharacter(pos, sprite),
 	m_wanderDir(0, 0),
 	m_speed(25.0f),
-	m_dead(false)
+	m_dead(false),
+	m_shadowSprite(shadowSprite)
 {
+	SetFrameStride(125);
 }
 
-void Zombie::Update(gs2d::VideoPtr video, gs2d::InputPtr input, const unsigned long lastFrameDeltaTimeMS)
+void Zombie::Update(VideoPtr video, InputPtr input, const unsigned long lastFrameDeltaTimeMS)
 {
 	if (m_wanderDir == Vector2(0, 0))
 	{
@@ -19,12 +22,12 @@ void Zombie::Update(gs2d::VideoPtr video, gs2d::InputPtr input, const unsigned l
 		const float dirY = 1 - Randomizer::Float(2.0f);
 		m_wanderDir = Normalize(Vector2(dirX, dirY));
 	}
-	Move(m_wanderDir, m_speed / video->GetFPSRate());
+	Move(m_wanderDir, m_speed / AssertFPS(video));
 	GameCharacter::Update(video, input, lastFrameDeltaTimeMS);
 	FixDirection(video);
 }
 
-void Zombie::FixDirection(gs2d::VideoPtr video)
+void Zombie::FixDirection(VideoPtr video)
 {
 	const Vector2 screenSize = video->GetScreenSizeF();
 	if (m_pos.x > screenSize.x || m_pos.x < 0.0f)
@@ -35,6 +38,12 @@ void Zombie::FixDirection(gs2d::VideoPtr video)
 	{
 		m_wanderDir.y *= -1.0f;
 	}
+}
+
+void Zombie::Draw(VideoPtr video)
+{
+	DrawShadow(video, m_shadowSprite, m_pos, 13.0f);
+	GameCharacter::Draw(video);
 }
 
 bool Zombie::IsDead() const

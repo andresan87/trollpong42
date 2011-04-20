@@ -22,6 +22,7 @@ class SingleParticle : public TemporaryEffect
 	const float m_alphaCap;
 	const float m_spinSpeed;
 	const bool m_fadeOut;
+	const bool m_modulate;
 	float m_growth, m_scale;
 	gs2d::SpritePtr m_sprite;
 	const unsigned long m_duration;
@@ -30,7 +31,7 @@ class SingleParticle : public TemporaryEffect
 public:
 	SingleParticle(gs2d::VideoPtr video, gs2d::SpritePtr sprite, const gs2d::math::Vector2& pos, const float spinSpeed,
 		const unsigned long duration, const float growth, const gs2d::math::Vector2& size, const float alphaCap,
-		const bool invertAlpha, const bool fadeOut = true, const float angle = 0.0f);
+		const bool invertAlpha, const bool fadeOut = true, const float angle = 0.0f, const bool modulate = false);
 	bool IsOver() const;
 	void Draw(gs2d::VideoPtr video);
 	void Update(gs2d::VideoPtr video, const unsigned long elapsedTime);

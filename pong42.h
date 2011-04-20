@@ -9,9 +9,13 @@ class Pong : public BaseApplication
 {
 	VideoPtr m_video;
 	InputPtr m_input;
+	AudioPtr m_audio;
 
 	SpritePtr m_backgroundImage, m_lineSprite, m_pawnSprite,
-		m_ballSprite, m_goalSprite, m_ballHighlight, m_bloodSprite;
+		m_ballSprite, m_goalSprite, m_ballHighlight, m_bloodSprite,
+		m_shadowSprite, m_characterShadowSprite, m_explosionSprite;
+
+	std::vector<SpritePtr> m_bloodDecals;
 
 	EffectManagerPtr m_fxManager;
 	PawnManagerPtr m_pawnManager;
@@ -20,6 +24,7 @@ class Pong : public BaseApplication
 	void DrawScenario();
 
 public:
+	Pong();
 	void Start(VideoPtr video, InputPtr input, AudioPtr audio);
 	Application::APP_STATUS Update(unsigned long lastFrameDeltaTimeMS);
 	void RenderFrame();

@@ -3,6 +3,37 @@
 
 #include "../gs2d/src/gs2dframework.h"
 
+inline void DrawShadow(gs2d::VideoPtr video, gs2d::SpritePtr shadowSprite, const gs2d::math::Vector2& pos, const float radius)
+{
+	const gs2d::GS_ALPHA_MODE am = video->GetAlphaMode();
+	video->SetAlphaMode(gs2d::GSAM_PIXEL);
+	const float size = radius * 2.4f;
+	const gs2d::GS_COLOR color(100, 255, 255, 255);
+	shadowSprite->DrawShaped(pos, gs2d::math::Vector2(size, size), color, color, color, color, 0.0f);
+	video->SetAlphaMode(am);
+}
+
+inline float AssertFPS(gs2d::VideoPtr video)
+{
+	const static float fpsCap = 60.0f;
+	const static float minFps = 30.0f;
+	const float fps = video->GetFPSRate();
+	if (fps <= 0.0f)
+	{
+		video->Message(GS_L("FPS is 0!"), gs2d::GSMT_WARNING);
+		return 1.0f;
+	}
+	else if (fps > fpsCap)
+	{
+		return fpsCap;
+	}
+	else if (fps < minFps)
+	{
+		return minFps;
+	}
+	return fps;
+}
+
 inline void Clamp(gs2d::math::Vector2& pos, const float radius, const gs2d::math::Rect2Df& rect)
 {
 	const gs2d::math::Vector2 pawnRect = gs2d::math::Vector2(radius, radius);

@@ -7,12 +7,14 @@
 
 class EffectManager
 {
-	std::list<TemporaryEffectPtr> m_effects;
+	std::list<TemporaryEffectPtr> m_mainEffects;
+	std::list<TemporaryEffectPtr> m_groundEffects;
 
 public:
-	void Add(TemporaryEffectPtr effect);
+	void Add(TemporaryEffectPtr effect, const bool ground = false);
 	void Update(gs2d::VideoPtr video, const unsigned long elapsedTime);
-	void Draw(gs2d::VideoPtr video);
+	void DrawMain(gs2d::VideoPtr video);
+	void DrawGround(gs2d::VideoPtr video);
 };
 
 typedef boost::shared_ptr<EffectManager> EffectManagerPtr;
