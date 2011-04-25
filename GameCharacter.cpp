@@ -9,15 +9,12 @@ const unsigned int GameCharacter::MOVING_RIGHT = 2;
 const unsigned int GameCharacter::MOVING_UP = 3;
 const unsigned long GameCharacter::m_defaultFrameStride = 150;
 
-
-GameCharacter::GameCharacter(const Vector2& pos, SpritePtr sprite) :
+GameCharacter::GameCharacter(const Vector2& pos, const str_type::string& spriteName) :
 	m_pos(pos),
 	m_currentFrameStride(m_defaultFrameStride),
 	m_direction(MOVING_UP),
-	m_sprite(sprite)
+	m_spriteName(spriteName)
 {
-	m_sprite->SetupSpriteRects(4, 4);
-	m_sprite->SetOrigin(GSEO_CENTER_BOTTOM);
 }
 
 Vector2 GameCharacter::GetPos()
@@ -65,10 +62,12 @@ int GameCharacter::FindDirection(const float angle)
 	}
 }
 
-void GameCharacter::Draw(VideoPtr video)
+void GameCharacter::Draw(SpriteResourceManager& spr, VideoPtr video)
 {
-	m_sprite->SetRect(m_frameTimer.Get());
-	m_sprite->Draw(m_pos);
+	SpritePtr sprite = spr.GetSprite(video, m_spriteName, 4, 4);
+	sprite->SetOrigin(GSEO_CENTER_BOTTOM);
+	sprite->SetRect(m_frameTimer.Get());
+	sprite->Draw(m_pos);
 }
 
 void GameCharacter::Update(VideoPtr video, InputPtr input, const unsigned long lastFrameDeltaTimeMS)
@@ -115,7 +114,7 @@ void GameCharacter::Update(VideoPtr video, InputPtr input, const unsigned long l
 	m_moveVector = Vector2(0.0f, 0.0f);
 }
 
-SpritePtr GameCharacter::GetSprite()
+str_type::string GameCharacter::GetSpriteName()
 {
-	return m_sprite;
+	return m_spriteName;
 }

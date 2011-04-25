@@ -73,14 +73,14 @@ GS_BYTE Ball::TimeBomb::GetExplosionBias() const
 	return static_cast<GS_BYTE>(GetExplosionBiasF() * 255.0f);
 }
 
-Ball::Ball(SpritePtr sprite, SpritePtr highlight, SpritePtr shadowSprite, VideoPtr video) :
+Ball::Ball(VideoPtr video) :
 	m_angle(0),
-	m_sprite(sprite),
-	m_highlight(highlight),
+	m_sprite(GS_L("ball.png")),
+	m_highlight(GS_L("ball_highlight.png")),
 	m_dir(0, 0),
 	m_speed(300.0f),
 	m_lastTouchOwnerId(-1),
-	m_shadowSprite(shadowSprite),
+	m_shadowSprite(GS_L("shadow.png")),
 	m_currentArea(-1)
 {
 	m_pos = video->GetScreenSizeF()/2.0f;
@@ -106,7 +106,7 @@ Vector2 Ball::GetPos() const
 	return m_pos;
 }
 
-SpritePtr Ball::GetSprite()
+str_type::string Ball::GetSpriteName()
 {
 	return m_sprite;
 }
@@ -119,9 +119,10 @@ void Ball::Reset(VideoPtr video)
 	m_timeBomb.Reset();
 }
 
-void Ball::LockInside(VideoPtr video)
+void Ball::LockInside(VideoPtr video, SpriteResourceManager& spr)
 {
-	const Vector2 ballSize(GetRadius(), GetRadius());
+	const float radius = GetRadius(spr, video);
+	const Vector2 ballSize(radius, radius);
 	const Vector2 min(ballSize);
 	const Vector2 max(video->GetScreenSizeF()-ballSize);
 
@@ -130,7 +131,7 @@ void Ball::LockInside(VideoPtr video)
 	if (m_pos.y < min.y || m_pos.y > max.y)
 		m_dir.y *= -1.0f;
 
-	Clamp(m_pos, GetRadius(), Rect2Df(Vector2(0,0), video->GetScreenSizeF()));
+	Clamp(m_pos, radius, Rect2Df(Vector2(0,0), video->GetScreenSizeF()));
 }
 
 Vector2 Ball::GetDir() const
@@ -138,29 +139,30 @@ Vector2 Ball::GetDir() const
 	return m_dir;
 }
 
-float Ball::GetRadius() const
+float Ball::GetRadius(SpriteResourceManager& spr, VideoPtr video) const
 {
-	return m_sprite->GetBitmapSizeF().x / 2.0f;
+	return spr.GetSprite(video, m_sprite)->GetBitmapSizeF().x / 2.0f;
 }
 
-void Ball::Draw(VideoPtr video)
+void Ball::Draw(VideoPtr video, SpriteResourceManager& spr)
 {
-	m_sprite->Draw(m_pos, GS_WHITE, m_angle);
+	spr.GetSprite(video, m_sprite)->Draw(m_pos, GS_WHITE, m_angle);
 
 	video->SetAlphaMode(GSAM_ADD);
 	const int angle = static_cast<int>(m_angle) % 10;
 
-	DrawShadow(video, m_shadowSprite, m_pos, GetRadius());
+	DrawShadow(video, spr.GetSprite(video, m_shadowSprite), m_pos, GetRadius(spr, video));
 	const GS_BYTE explosionColor = 255-m_timeBomb.GetExplosionBias();
-	m_highlight->Draw(m_pos, GS_COLOR(255, 255, explosionColor, explosionColor), static_cast<float>(angle));
+	spr.GetSprite(video, m_highlight)->Draw(m_pos, GS_COLOR(255, 255, explosionColor, explosionColor), static_cast<float>(angle));
 	video->SetAlphaMode(GSAM_PIXEL);
 }
 
-void Ball::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager, const unsigned long lastFrameElapsedTimeMS)
+void Ball::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager,
+				  const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr)
 {
 	m_pos += Normalize(m_dir) * (m_speed/AssertFPS(video));
 	m_angle += (m_speed/AssertFPS(video)) * 49.0f;
-	LockInside(video);
+	LockInside(video, spr);
 	m_timeBomb.Update(this, lastFrameElapsedTimeMS, GetCurrentArea());
 }
 
@@ -169,24 +171,25 @@ bool Ball::MustExplode() const
 	return m_timeBomb.MustExplode(this);
 }
 
-Pawn::Goal::Goal(SpritePtr sprite, Vector2 normalizedPos) :
-	m_sprite(sprite),
+Pawn::Goal::Goal(Vector2 normalizedPos) :
+	m_sprite(GS_L("goal.png")),
 	m_normalizedPos(normalizedPos)
 {
 }
 
-void Pawn::Goal::Draw(VideoPtr video) const
+void Pawn::Goal::Draw(VideoPtr video, SpriteResourceManager& spr) const
 {
-	const Vector2 bitmapSize(m_sprite->GetBitmapSizeF());
+	SpritePtr sprite = spr.GetSprite(video, m_sprite);
+	const Vector2 bitmapSize(sprite->GetBitmapSizeF());
 	const Vector2 screenSize(video->GetScreenSizeF());
 	const Vector2 pos = m_normalizedPos * screenSize;
 	const Vector2 goalDir = Normalize((screenSize/2.0f) - pos) * bitmapSize.y;
-	m_sprite->Stretch(pos, pos + goalDir, bitmapSize.x, GS_BLACK, GS_BLACK);
+	sprite->Stretch(pos, pos + goalDir, bitmapSize.x, GS_BLACK, GS_BLACK);
 }
 
-float Pawn::Goal::GetRadius() const
+float Pawn::Goal::GetRadius(SpriteResourceManager& spr, VideoPtr video) const
 {
-	return m_sprite->GetBitmapSizeF().x / 2.0f;
+	return spr.GetSprite(video, m_sprite)->GetBitmapSizeF().x / 2.0f;
 }
 
 Vector2 Pawn::Goal::GetNormalizedPos() const
@@ -194,31 +197,31 @@ Vector2 Pawn::Goal::GetNormalizedPos() const
 	return m_normalizedPos;
 }
 
-Pawn::Pawn(SpritePtr sprite, const Rect2Df &area, ControllerPtr controller, BallPtr ball,
-		const Vector2& goalNormalizedPos, SpritePtr goalSprite, const int uniqueId, SpritePtr shadowSprite) :
-	m_sprite(sprite),
+Pawn::Pawn(const Rect2Df &area, ControllerPtr controller, BallPtr ball,
+		const Vector2& goalNormalizedPos, const int uniqueId) :
+	m_sprite(GS_L("pawn.png")),
 	m_area(area),
 	m_controller(controller),
 	m_ball(ball),
-	m_goal(goalSprite, goalNormalizedPos),
+	m_goal(goalNormalizedPos),
 	m_uniqueId(uniqueId),
 	m_score(0),
 	m_scoreFont(GS_L("Arcade80.fnt")),
 	m_scorePosOffset(32.0f),
-	m_shadowSprite(shadowSprite)
+	m_shadowSprite(GS_L("shadow.png"))
 {
 	m_pos = Vector2(area.pos + (area.size / 2.0f));
 }
 
-void Pawn::Draw(VideoPtr video)
+void Pawn::Draw(VideoPtr video, SpriteResourceManager& spr)
 {
-	DrawShadow(video, m_shadowSprite, m_pos, GetRadius());
-	m_sprite->Draw(m_pos);
+	DrawShadow(video, spr.GetSprite(video, m_shadowSprite), m_pos, GetRadius(spr, video));
+	spr.GetSprite(video, m_sprite)->Draw(m_pos);
 }
 
-void Pawn::DrawGoal(VideoPtr video)
+void Pawn::DrawGoal(VideoPtr video, SpriteResourceManager& spr)
 {
-	m_goal.Draw(video);
+	m_goal.Draw(video, spr);
 }
 
 void Pawn::DrawScore(VideoPtr video)
@@ -236,16 +239,17 @@ void Pawn::DrawScore(VideoPtr video)
 	video->DrawBitmapText(pos, ss.str(), m_scoreFont, GS_BLACK);
 }
 
-void Pawn::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager, const unsigned long lastFrameElapsedTimeMS)
+void Pawn::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager,
+				  const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr)
 {
 	if (IsInArea(m_ball->m_pos, m_area, Vector2(0.0f, 0.0f)))
 	{
 		m_ball->m_currentArea = m_uniqueId;
 	}
 
-	m_controller->Update(this, video, input, fxManager, lastFrameElapsedTimeMS);
-	DoBallBounce();
-	LockInside();
+	m_controller->Update(this, video, input, fxManager, lastFrameElapsedTimeMS, spr);
+	DoBallBounce(spr, video);
+	LockInside(spr, video);
 }
 
 int Pawn::GetScore() const
@@ -263,14 +267,14 @@ void Pawn::SetScore(const int score)
 	m_score = score;
 }
 
-float Pawn::GetRadius() const
+float Pawn::GetRadius(SpriteResourceManager& spr, VideoPtr video) const
 {
-	return m_sprite->GetBitmapSizeF().x / 2.0f;
+	return spr.GetSprite(video, m_sprite)->GetBitmapSizeF().x / 2.0f;
 }
 
-void Pawn::DoBallBounce()
+void Pawn::DoBallBounce(SpriteResourceManager& spr, VideoPtr video)
 {
-	const float radiusSum = GetRadius()+m_ball->GetRadius();
+	const float radiusSum = GetRadius(spr, video)+m_ball->GetRadius(spr, video);
 	if (SquaredDistance(m_pos, m_ball->m_pos) <= (radiusSum*radiusSum))
 	{
 		const Vector2 wallDiff(m_ball->m_pos - m_pos);
@@ -285,10 +289,10 @@ void Pawn::DoBallBounce()
 	}
 }
 
-bool Pawn::GoalScored(VideoPtr video) const
+bool Pawn::GoalScored(VideoPtr video, SpriteResourceManager& spr) const
 {
-	const float radiusSum = m_goal.GetRadius() + m_ball->GetRadius();
-	if (SquaredDistance(m_goal.GetNormalizedPos()*video->GetScreenSizeF(), m_ball->GetPos()) < radiusSum*radiusSum)
+	const float radiusSum = m_goal.GetRadius(spr, video) + m_ball->GetRadius(spr, video);
+	if (SquaredDistance(m_goal.GetNormalizedPos() * video->GetScreenSizeF(), m_ball->GetPos()) < radiusSum*radiusSum)
 	{
 		return true;
 	}
@@ -298,7 +302,7 @@ bool Pawn::GoalScored(VideoPtr video) const
 	}
 }
 
-void Pawn::LockInside()
+void Pawn::LockInside(SpriteResourceManager& spr, VideoPtr video)
 {
-	Clamp(m_pos, GetRadius(), m_area);
+	Clamp(m_pos, GetRadius(spr, video), m_area);
 }

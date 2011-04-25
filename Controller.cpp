@@ -53,7 +53,8 @@ Vector2 GetTouchMoveInArea(const Rect2Df& area, InputPtr input, VideoPtr video)
 	return Vector2(0, 0);
 }
 
-void PlayerTouchController::Update(Pawn *pawn, VideoPtr video, InputPtr input, EffectManagerPtr fxManager, const unsigned long lastFrameElapsedTimeMS) const
+void PlayerTouchController::Update(Pawn *pawn, VideoPtr video, InputPtr input, EffectManagerPtr fxManager,
+								   const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr) const
 {
 	if (m_ball->m_dir == Vector2(0, 0))
 	{
@@ -67,10 +68,12 @@ void PlayerTouchController::Update(Pawn *pawn, VideoPtr video, InputPtr input, E
 	const Vector2 touchPos = HasTouchHitInArea(pawn->m_area, input, video);
 	if (touchPos != GS_NO_TOUCH)
 	{
+		SpritePtr pawnSprite = spr.GetSprite(video, pawn->m_sprite);
+		const Vector2 size(pawnSprite->GetBitmapSizeF());
 		fxManager->Add(TemporaryEffectPtr(new SingleParticle(video, pawn->m_sprite, pawn->m_pos, 600.0f, 400, 1.1f,
-					   pawn->m_sprite->GetBitmapSizeF(), 0.5f, false)), false);
+					   size, 0.5f, false)), false);
 		pawn->m_pos = touchPos;
 		fxManager->Add(TemporaryEffectPtr(new SingleParticle(video, pawn->m_sprite, pawn->m_pos,-600.0f, 300,-1.1f,
-					   pawn->m_sprite->GetBitmapSizeF() * 1.5f, 1.0f, true)), false);
+					   size * 1.5f, 1.0f, true)), false);
 	}
 }

@@ -6,7 +6,8 @@
 class Controller
 {
 public:
-	virtual void Update(Pawn *pawn, gs2d::VideoPtr video, gs2d::InputPtr input, EffectManagerPtr fxManager, const unsigned long lastFrameElapsedTimeMS) const = 0;
+	virtual void Update(Pawn *pawn, gs2d::VideoPtr video, gs2d::InputPtr input, EffectManagerPtr fxManager,
+						const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr) const = 0;
 };
 
 typedef boost::shared_ptr<Controller> ControllerPtr;
@@ -17,7 +18,8 @@ class PlayerTouchController : public Controller
 
 public:
 	PlayerTouchController(BallPtr ball);
-	void Update(Pawn *pawn, gs2d::VideoPtr video, gs2d::InputPtr input, EffectManagerPtr fxManager, const unsigned long lastFrameElapsedTimeMS) const;
+	void Update(Pawn *pawn, gs2d::VideoPtr video, gs2d::InputPtr input, EffectManagerPtr fxManager,
+		const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr) const;
 };
 
 typedef boost::shared_ptr<PlayerTouchController> PlayerTouchControllerPtr;

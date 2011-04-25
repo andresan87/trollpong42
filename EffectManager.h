@@ -3,6 +3,7 @@
 
 #include "../gs2d/src/gs2dframework.h"
 #include "TemporaryEffect.h"
+#include "SpriteResourceManager.h"
 #include <list>
 
 class EffectManager
@@ -12,9 +13,9 @@ class EffectManager
 
 public:
 	void Add(TemporaryEffectPtr effect, const bool ground = false);
-	void Update(gs2d::VideoPtr video, const unsigned long elapsedTime);
-	void DrawMain(gs2d::VideoPtr video);
-	void DrawGround(gs2d::VideoPtr video);
+	void Update(gs2d::VideoPtr video, const unsigned long elapsedTime, SpriteResourceManager& spr);
+	void DrawMain(gs2d::VideoPtr video, SpriteResourceManager& spr);
+	void DrawGround(gs2d::VideoPtr video, SpriteResourceManager& spr);
 };
 
 typedef boost::shared_ptr<EffectManager> EffectManagerPtr;

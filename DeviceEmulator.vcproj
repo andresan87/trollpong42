@@ -197,6 +197,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GameState.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\gs2d\src\Platform\main.cpp"
 				>
 			</File>
@@ -206,6 +210,14 @@
 			</File>
 			<File
 				RelativePath=".\pong42.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SpriteResourceManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\StateManager.cpp"
 				>
 			</File>
 			<File
@@ -247,11 +259,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GameState.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PawnManager.h"
 				>
 			</File>
 			<File
-				RelativePath=".\pong42.h"
+				RelativePath=".\SpriteResourceManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\StateManager.h"
 				>
 			</File>
 			<File
