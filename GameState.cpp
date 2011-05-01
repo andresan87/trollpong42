@@ -1,11 +1,28 @@
 #include "GameState.h"
+#include "GameMenu.h"
 
 using namespace gs2d;
 using namespace gs2d::math;
 
+const str_type::string GameState::GAME_STATE = GS_L("game");
+
 GameState::GameState() :
-	m_bloodDecalNames(2)
+	m_bloodDecalNames(2),
+	m_backButton(Vector2(100, 100), Vector2(0.5f, 1.0f), GS_L("back.png"), 0),
+	m_didOnce(false)
 {
+}
+
+boost::shared_ptr<GameState> GameState::Create()
+{
+	boost::shared_ptr<GameState> pi(new GameState);
+	pi->weak_this = pi;
+	return pi;
+}
+
+GameState& GameState::operator=(GameState const& other)
+{
+	return *this; // can't copy raw type
 }
 
 void GameState::LoadResources(SpriteResourceManager &spr, VideoPtr video, InputPtr input, AudioPtr audio)
@@ -24,6 +41,8 @@ void GameState::LoadResources(SpriteResourceManager &spr, VideoPtr video, InputP
 
 	temp = spr.GetSprite(video, GS_L("ball_highlight.png"));
 	temp->SetOrigin(GSEO_CENTER);
+
+	temp = spr.GetSprite(video, GS_L("back.png"));
 
 	temp = spr.GetSprite(video, GS_L("goal.png"));
 	temp->SetOrigin(GSEO_CENTER_BOTTOM);
@@ -51,11 +70,6 @@ void GameState::LoadResources(SpriteResourceManager &spr, VideoPtr video, InputP
 		bloodDecal->SetOrigin(GSEO_CENTER);
 	}
 
-	m_ball = BallPtr(new Ball(video));
-	m_pawnManager = PawnManagerPtr(new PawnManager(video, m_ball));
-
-	m_fxManager = EffectManagerPtr(new EffectManager());
-
 	std::vector<str_type::string> sprites;
 	sprites.push_back(GS_L("zombies/zombie01.png"));
 	sprites.push_back(GS_L("zombies/zombie02.png"));
@@ -68,7 +82,17 @@ void GameState::LoadResources(SpriteResourceManager &spr, VideoPtr video, InputP
 		sprite->SetupSpriteRects(4, 4);
 		sprite->SetOrigin(GSEO_CENTER_BOTTOM);
 	}
-	m_zombieManager = ZombieManagerPtr(new ZombieManager(video, sprites, m_ball, m_bloodDecalNames));
+
+	if (!m_didOnce)
+	{
+		m_ball = BallPtr(new Ball(video));
+		m_pawnManager = PawnManagerPtr(new PawnManager(video, m_ball));
+		m_fxManager = EffectManagerPtr(new EffectManager());
+		m_zombieManager = ZombieManagerPtr(new ZombieManager(video, sprites, m_ball, m_bloodDecalNames));
+		m_didOnce = true;
+	}
+
+	m_backButton.SetPos(video->GetScreenSizeF() * Vector2(0.5f, 1.0f));
 }
 
 void GameState::Update(SpriteResourceManager& spr, unsigned long lastFrameDeltaTimeMS, VideoPtr video, InputPtr input, AudioPtr audio)
@@ -77,11 +101,20 @@ void GameState::Update(SpriteResourceManager& spr, unsigned long lastFrameDeltaT
 	m_pawnManager->Update(video, input, m_fxManager, lastFrameDeltaTimeMS, spr);
 	m_ball->Update(video, input, m_fxManager, lastFrameDeltaTimeMS, spr);
 	m_zombieManager->Update(spr, video, input, lastFrameDeltaTimeMS, m_fxManager, m_pawnManager);
+	m_backButton.UpdateButton(video, input, spr);
+
+	if (m_backButton.GetStatus() == TouchButton::ACTIVATED)
+	{
+		StateManager::PushIdleState(GameState::GAME_STATE, boost::shared_ptr<State>(weak_this));
+		StateManager::SetState(StatePtr(new GameMenu()));
+		m_backButton.SetStatus(TouchButton::IDLE);
+	}
 }
 
 void GameState::Draw(SpriteResourceManager &spr, VideoPtr video, InputPtr input, AudioPtr audio)
 {
 	video->BeginSpriteScene(0xFFEAEAEA);
+	video->UnsetScissor();
 	DrawScenario(video, spr);
 	m_pawnManager->Draw(video, spr);
 	m_ball->Draw(video, spr);
@@ -93,6 +126,8 @@ void GameState::Draw(SpriteResourceManager &spr, VideoPtr video, InputPtr input,
 	str_type::stringstream ss;
 	ss << video->GetFPSRate();
 	video->DrawBitmapText(Vector2(0,0), ss.str(), GS_L("Verdana20_shadow.fnt"), GS_COLOR(40,255,255,255));
+
+	m_backButton.DrawButton(video, input, spr);
 	video->EndSpriteScene();
 }
 

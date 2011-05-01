@@ -38,7 +38,8 @@ class StateManager : public gs2d::BaseApplication
 public:
 	StateManager(const StatePtr& state);
 
-	void PushIdleState(const gs2d::str_type::string& name, const StatePtr& state);
+	static StatePtr GetIdleState(const gs2d::str_type::string& name);
+	static void PushIdleState(const gs2d::str_type::string& name, const StatePtr& state);
 	static void SetState(const gs2d::str_type::string& name);
 	static void SetState(const StatePtr& state);
 	StatePtr GetCurrentState();

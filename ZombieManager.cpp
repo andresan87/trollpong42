@@ -3,7 +3,8 @@
 using namespace gs2d;
 using namespace gs2d::math;
 
-const unsigned long ZombieManager::ZOMBIE_ADD_INTERVAL = 2000;
+const unsigned long ZombieManager::ZOMBIE_ADD_INTERVAL = 1000;
+const std::size_t ZombieManager::MAX_ZOMBIES = 40;
 
 ZombieManager::ZombieManager(VideoPtr video, const std::vector<gs2d::str_type::string>& spriteNames, BallPtr ball,
 							 const std::vector<str_type::string>& bloodDecals) :
@@ -37,13 +38,16 @@ void ZombieManager::Add(ZombiePtr zombie)
 
 void ZombieManager::AddZombies(gs2d::VideoPtr video)
 {
-	if (video->GetElapsedTime() - m_lastAddTime > ZOMBIE_ADD_INTERVAL)
+	if (m_zombies.size() < MAX_ZOMBIES)
 	{
-		const Vector2 spawnPos = m_normalizedSpawnSpots[GetNextSpawnSpot()] * video->GetScreenSizeF();
+		if (video->GetElapsedTime() - m_lastAddTime > ZOMBIE_ADD_INTERVAL)
+		{
+			const Vector2 spawnPos = m_normalizedSpawnSpots[GetNextSpawnSpot()] * video->GetScreenSizeF();
 
-		str_type::string spriteName = m_spriteNames[Randomizer::Int(m_spriteNames.size()-1)];
-		m_zombies.push_back(ZombiePtr(new Zombie(video, spawnPos, spriteName)));
-		m_lastAddTime = video->GetElapsedTime();
+			str_type::string spriteName = m_spriteNames[Randomizer::Int(m_spriteNames.size()-1)];
+			m_zombies.push_back(ZombiePtr(new Zombie(video, spawnPos, spriteName)));
+			m_lastAddTime = video->GetElapsedTime();
+		}
 	}
 }
 

@@ -197,6 +197,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GameMenu.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\GameState.cpp"
 				>
 			</File>
@@ -222,6 +226,10 @@
 			</File>
 			<File
 				RelativePath=".\TemporaryEffect.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TouchButton.cpp"
 				>
 			</File>
 			<File
@@ -259,6 +267,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GameMenu.h"
+				>
+			</File>
+			<File
 				RelativePath=".\GameState.h"
 				>
 			</File>
@@ -276,6 +288,10 @@
 			</File>
 			<File
 				RelativePath=".\TemporaryEffect.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TouchButton.h"
 				>
 			</File>
 			<File

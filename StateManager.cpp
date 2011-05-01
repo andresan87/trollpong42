@@ -29,6 +29,19 @@ void StateManager::SwapState()
 	}
 }
 
+StatePtr StateManager::GetIdleState(const gs2d::str_type::string& name)
+{
+	std::map<str_type::string, StatePtr>::const_iterator iter = m_idleStates.find(name);
+	if (iter != m_idleStates.end())
+	{
+		return iter->second;
+	}
+	else
+	{
+		return StatePtr();
+	}
+}
+
 Application::APP_STATUS StateManager::Update(unsigned long lastFrameDeltaTimeMS)
 {
 	SwapState();

@@ -27,6 +27,7 @@ class ZombieManager
 	std::size_t GetNextSpawnSpot();
 
 public:
+	static const std::size_t MAX_ZOMBIES;
 	ZombieManager(gs2d::VideoPtr video, const std::vector<gs2d::str_type::string>& spriteNames, BallPtr ball,
 		const std::vector<gs2d::str_type::string>& bloodDecals);
 	void Add(ZombiePtr zombie);
