@@ -27,6 +27,11 @@ void GameCharacter::Move(const Vector2& dir, const float speed)
 	m_moveVector += Normalize(dir) * speed;
 }
 
+void GameCharacter::FillSpritePtr(SpriteResourceManager& spr, gs2d::VideoPtr video)
+{
+	m_sprite = spr.GetSprite(video, m_spriteName);
+}
+
 void GameCharacter::SetFrameStride(const unsigned long stride)
 {
 	m_currentFrameStride = stride;
@@ -64,10 +69,9 @@ int GameCharacter::FindDirection(const float angle)
 
 void GameCharacter::Draw(SpriteResourceManager& spr, VideoPtr video)
 {
-	SpritePtr sprite = spr.GetSprite(video, m_spriteName, 4, 4);
-	sprite->SetOrigin(GSEO_CENTER_BOTTOM);
-	sprite->SetRect(m_frameTimer.Get());
-	sprite->Draw(m_pos);
+	m_sprite->SetOrigin(GSEO_CENTER_BOTTOM);
+	m_sprite->SetRect(m_frameTimer.Get());
+	m_sprite->Draw(m_pos);
 }
 
 void GameCharacter::Update(VideoPtr video, InputPtr input, const unsigned long lastFrameDeltaTimeMS)
@@ -117,4 +121,9 @@ void GameCharacter::Update(VideoPtr video, InputPtr input, const unsigned long l
 str_type::string GameCharacter::GetSpriteName()
 {
 	return m_spriteName;
+}
+
+SpritePtr GameCharacter::GetSprite()
+{
+	return m_sprite;
 }

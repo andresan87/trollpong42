@@ -16,6 +16,7 @@ protected:
 	static const unsigned long m_defaultFrameStride;
 
 	gs2d::str_type::string m_spriteName;
+	gs2d::SpritePtr m_sprite;
 	gs2d::math::Vector2 m_pos;
 
 	FrameTimer m_frameTimer;
@@ -28,6 +29,7 @@ public:
 	GameCharacter(const gs2d::math::Vector2& pos, const gs2d::str_type::string& m_spriteName);
 	gs2d::math::Vector2 GetPos();
 	void Move(const gs2d::math::Vector2& dir, const float speed);
+	void FillSpritePtr(SpriteResourceManager& spr, gs2d::VideoPtr video);
 	void SetFrameStride(const unsigned long stride);
 	void SetDirection(const gs2d::math::Vector2& dir);
 	void SetDirection(const float angle);
@@ -35,6 +37,7 @@ public:
 	void Draw(SpriteResourceManager& spr, gs2d::VideoPtr video);
 	void Update(gs2d::VideoPtr video, gs2d::InputPtr input, const unsigned long lastFrameDeltaTimeMS);
 	gs2d::str_type::string GetSpriteName();
+	gs2d::SpritePtr GetSprite();
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "PawnManager.h"
+#include "StateManager.h"
 
 using namespace gs2d;
 using namespace gs2d::math;
@@ -28,13 +29,14 @@ PawnManager::PawnManager(VideoPtr video, BallPtr ball) :
 	m_ball = ball;
 }
 
-void PawnManager::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager, const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr)
+void PawnManager::Update(VideoPtr video, InputPtr input, AudioPtr audio, EffectManagerPtr fxManager,
+						 const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr)
 {
 	const std::size_t size = m_pawns.size();
 	for (std::size_t t = 0; t<size; t++)
 	{
-		m_pawns[t]->Update(video, input, fxManager, lastFrameElapsedTimeMS, spr);
-		ManageScore(t, video, fxManager, spr);
+		m_pawns[t]->Update(video, input, audio, fxManager, lastFrameElapsedTimeMS, spr);
+		ManageScore(t, video, audio, fxManager, spr);
 	}
 	if (m_ball->MustExplode())
 	{
@@ -54,10 +56,11 @@ void PawnManager::AddToScore(const int pawn, const int score)
 	}
 }
 
-void PawnManager::ManageScore(const std::size_t idx, VideoPtr video, EffectManagerPtr fxManager, SpriteResourceManager& spr)
+void PawnManager::ManageScore(const std::size_t idx, VideoPtr video, AudioPtr audio, EffectManagerPtr fxManager, SpriteResourceManager& spr)
 {
 	if (m_pawns[idx]->GoalScored(video, spr))
 	{
+		StateManager::m_aud.GetSample(audio, GS_L("score.ogg"))->Play();
 		SpritePtr ballSprite = spr.GetSprite(video, m_ball->GetSpriteName());
 		fxManager->Add(TemporaryEffectPtr(new SingleParticle(video, m_ball->GetSpriteName(), m_ball->GetPos(), 400.0f, 600, 1.2f,
 					   ballSprite->GetBitmapSizeF(), 0.8f, false)));

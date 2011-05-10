@@ -32,10 +32,12 @@ void Zombie::FixDirection(VideoPtr video)
 	if (m_pos.x > screenSize.x || m_pos.x < 0.0f)
 	{
 		m_wanderDir.x *= -1.0f;
+		m_pos.x = math::Clamp(m_pos.x, 0.0f, screenSize.x);
 	}
 	if (m_pos.y > screenSize.y || m_pos.y < 0.0f)
 	{
 		m_wanderDir.y *= -1.0f;
+		m_pos.y = math::Clamp(m_pos.y, 0.0f, screenSize.y);
 	}
 }
 

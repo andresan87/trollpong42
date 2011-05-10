@@ -3,6 +3,7 @@
 
 #include "../gs2d/src/gs2dframework.h"
 #include "SpriteResourceManager.h"
+#include "AudioResourceManager.h"
 #include <map>
 
 class State
@@ -23,6 +24,7 @@ class StateManager : public gs2d::BaseApplication
 	gs2d::InputPtr m_input;
 
 	SpriteResourceManager m_spr;
+
 	StatePtr m_currentState;
 
 	static StatePtr m_nextState;
@@ -43,6 +45,8 @@ public:
 	static void SetState(const gs2d::str_type::string& name);
 	static void SetState(const StatePtr& state);
 	StatePtr GetCurrentState();
+
+	static AudioResourceManager m_aud;
 };
 
 typedef boost::shared_ptr<StateManager> StateManagerPtr;

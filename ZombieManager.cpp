@@ -1,4 +1,5 @@
 #include "ZombieManager.h"
+#include "StateManager.h"
 
 using namespace gs2d;
 using namespace gs2d::math;
@@ -31,12 +32,15 @@ std::size_t ZombieManager::GetNextSpawnSpot()
 	return current;
 }
 
-void ZombieManager::Add(ZombiePtr zombie)
+void ZombieManager::FillSpritePtrs(const VideoPtr& video, SpriteResourceManager& spr)
 {
-	m_zombies.push_back(zombie);
+	for (std::list<ZombiePtr>::iterator iter = m_zombies.begin(); iter != m_zombies.end(); iter++)
+	{
+		(*iter)->FillSpritePtr(spr, video);
+	}
 }
 
-void ZombieManager::AddZombies(gs2d::VideoPtr video)
+void ZombieManager::AddZombies(gs2d::VideoPtr video, SpriteResourceManager& spr)
 {
 	if (m_zombies.size() < MAX_ZOMBIES)
 	{
@@ -45,7 +49,9 @@ void ZombieManager::AddZombies(gs2d::VideoPtr video)
 			const Vector2 spawnPos = m_normalizedSpawnSpots[GetNextSpawnSpot()] * video->GetScreenSizeF();
 
 			str_type::string spriteName = m_spriteNames[Randomizer::Int(m_spriteNames.size()-1)];
-			m_zombies.push_back(ZombiePtr(new Zombie(video, spawnPos, spriteName)));
+			ZombiePtr newZombie = ZombiePtr(new Zombie(video, spawnPos, spriteName));
+			newZombie->FillSpritePtr(spr, video);
+			m_zombies.push_back(newZombie);
 			m_lastAddTime = video->GetElapsedTime();
 		}
 	}
@@ -59,18 +65,18 @@ void ZombieManager::Draw(gs2d::VideoPtr video, SpriteResourceManager& spr)
 	}
 }
 
-void ZombieManager::CheckZombieStatus(SpriteResourceManager& spr, ZombiePtr zombie, EffectManagerPtr fxManager, VideoPtr video, PawnManagerPtr pawnManager)
+void ZombieManager::CheckZombieStatus(SpriteResourceManager& spr, ZombiePtr zombie, EffectManagerPtr fxManager, VideoPtr video, AudioPtr audio, PawnManagerPtr pawnManager)
 {
-	SpritePtr zombieSprite = spr.GetSprite(video, zombie->GetSpriteName());
+	SpritePtr zombieSprite = zombie->GetSprite();
 
 	const float rectSize = zombieSprite->GetRect().size.x;
 	const float radiusSum = m_ball->GetRadius(spr, video) + (rectSize / 4.0f);
 	if (SquaredDistance(m_ball->GetPos(), zombie->GetPos()) < radiusSum*radiusSum)
 	{
+		StateManager::m_aud.GetSample(audio, GS_L("zombiedeath.ogg"))->Play();
 		zombie->Kill();
 		pawnManager->AddToScore(m_ball->GetTouchOwnerId(), 1);
 
-		// SpritePtr bloodSprite = spr.GetSprite(video, GS_L("blood01.png"), 6, 1);
 		fxManager->Add(TemporaryEffectPtr(new SingleParticle(video, GS_L("blood01.png"), zombie->GetPos(), 0.0f, 400, 0.0f,
 					   Vector2(128, 128), 1.0f, false, false, 0.0f)));
 		fxManager->Add(TemporaryEffectPtr(new SingleParticle(video, GS_L("blood01.png"), zombie->GetPos(), 0.0f, 400, 0.0f,
@@ -78,20 +84,20 @@ void ZombieManager::CheckZombieStatus(SpriteResourceManager& spr, ZombiePtr zomb
 
 		const float size = 64.0f + Randomizer::Float(64.0f);
 
-		// SpritePtr decalSprite = spr.GetSprite(video, m_bloodDecals[Randomizer::Int(10) % 2]);
 		fxManager->Add(TemporaryEffectPtr(new SingleParticle(video, m_bloodDecals[Randomizer::Int(10) % 2], zombie->GetPos(), 0.0f, 14000, 0.0f,
 					   Vector2(size, size), 1.0f, false, true, Randomizer::Float(360.0f), false)), true);
 	}
 }
 
-void ZombieManager::Update(SpriteResourceManager& spr, VideoPtr video, InputPtr input, const unsigned long lastFrameDeltaTimeMS, EffectManagerPtr fxManager, PawnManagerPtr pawnManager)
+void ZombieManager::Update(SpriteResourceManager& spr, VideoPtr video, InputPtr input, AudioPtr audio,
+						   const unsigned long lastFrameDeltaTimeMS, EffectManagerPtr fxManager, PawnManagerPtr pawnManager)
 {
 	for (std::list<ZombiePtr>::iterator iter = m_zombies.begin(); iter != m_zombies.end();)
 	{
 		if (!(*iter)->IsDead())
 		{
 			(*iter)->Update(video, input, lastFrameDeltaTimeMS);
-			CheckZombieStatus(spr, *iter, fxManager, video, pawnManager);
+			CheckZombieStatus(spr, *iter, fxManager, video, audio, pawnManager);
 			iter++;
 		}
 		else
@@ -99,5 +105,5 @@ void ZombieManager::Update(SpriteResourceManager& spr, VideoPtr video, InputPtr 
 			iter = m_zombies.erase(iter);
 		}
 	}
-	AddZombies(video);
+	AddZombies(video, spr);
 }

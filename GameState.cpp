@@ -93,14 +93,22 @@ void GameState::LoadResources(SpriteResourceManager &spr, VideoPtr video, InputP
 	}
 
 	m_backButton.SetPos(video->GetScreenSizeF() * Vector2(0.5f, 1.0f));
+	m_zombieManager->FillSpritePtrs(video, spr);
+
+	//StateManager::m_aud.ReleaseAll();
+	StateManager::m_aud.GetSample(audio, GS_L("pawnhit.mp3"));
+	StateManager::m_aud.GetSample(audio, GS_L("sidehit.mp3"));
+	StateManager::m_aud.GetSample(audio, GS_L("zombiedeath.ogg"));
+	StateManager::m_aud.GetSample(audio, GS_L("score.ogg"));
+	StateManager::m_aud.GetSample(audio, GS_L("explosion.ogg"));
 }
 
 void GameState::Update(SpriteResourceManager& spr, unsigned long lastFrameDeltaTimeMS, VideoPtr video, InputPtr input, AudioPtr audio)
 {
 	m_fxManager->Update(video, lastFrameDeltaTimeMS, spr);
-	m_pawnManager->Update(video, input, m_fxManager, lastFrameDeltaTimeMS, spr);
-	m_ball->Update(video, input, m_fxManager, lastFrameDeltaTimeMS, spr);
-	m_zombieManager->Update(spr, video, input, lastFrameDeltaTimeMS, m_fxManager, m_pawnManager);
+	m_pawnManager->Update(video, input, audio, m_fxManager, lastFrameDeltaTimeMS, spr);
+	m_ball->Update(video, input, audio, m_fxManager, lastFrameDeltaTimeMS, spr);
+	m_zombieManager->Update(spr, video, input, audio, lastFrameDeltaTimeMS, m_fxManager, m_pawnManager);
 	m_backButton.UpdateButton(video, input, spr);
 
 	if (m_backButton.GetStatus() == TouchButton::ACTIVATED)

@@ -4,6 +4,7 @@ using namespace gs2d;
 using namespace gs2d::math;
 
 StatePtr StateManager::m_nextState;
+AudioResourceManager StateManager::m_aud;
 std::map<str_type::string, StatePtr> StateManager::m_idleStates;
 
 StateManager::StateManager(const StatePtr& state)
@@ -57,7 +58,7 @@ void StateManager::RenderFrame()
 void StateManager::Destroy()
 {
 	m_spr.ReleaseAll();
-	// unload audio resource manager
+	m_aud.ReleaseAll();
 }
 
 void StateManager::PushIdleState(const str_type::string& name, const StatePtr& state)

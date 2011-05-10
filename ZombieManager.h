@@ -22,17 +22,19 @@ class ZombieManager
 	unsigned long m_lastAddTime;
 	static const unsigned long ZOMBIE_ADD_INTERVAL;
 
-	void AddZombies(gs2d::VideoPtr video);
-	void CheckZombieStatus(SpriteResourceManager& spr, ZombiePtr zombie, EffectManagerPtr fxManager, gs2d::VideoPtr video, PawnManagerPtr pawnManager);
+	void AddZombies(gs2d::VideoPtr video, SpriteResourceManager& spr);
+	void CheckZombieStatus(SpriteResourceManager& spr, ZombiePtr zombie, EffectManagerPtr fxManager,
+		gs2d::VideoPtr video, gs2d::AudioPtr audio, PawnManagerPtr pawnManager);
 	std::size_t GetNextSpawnSpot();
 
 public:
+	void FillSpritePtrs(const gs2d::VideoPtr& video, SpriteResourceManager& spr);
 	static const std::size_t MAX_ZOMBIES;
 	ZombieManager(gs2d::VideoPtr video, const std::vector<gs2d::str_type::string>& spriteNames, BallPtr ball,
 		const std::vector<gs2d::str_type::string>& bloodDecals);
-	void Add(ZombiePtr zombie);
 	void Draw(gs2d::VideoPtr video, SpriteResourceManager& spr);
-	void Update(SpriteResourceManager& spr, gs2d::VideoPtr video, gs2d::InputPtr input, const unsigned long lastFrameDeltaTimeMS,
+	void Update(SpriteResourceManager& spr, gs2d::VideoPtr video,
+				gs2d::InputPtr input, gs2d::AudioPtr audio, const unsigned long lastFrameDeltaTimeMS,
 				EffectManagerPtr fxManager, PawnManagerPtr pawnManager);
 
 };

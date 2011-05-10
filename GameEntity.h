@@ -12,7 +12,7 @@ protected:
 
 public:
 	virtual void Draw(gs2d::VideoPtr video, SpriteResourceManager& spr) = 0;
-	virtual void Update(gs2d::VideoPtr video, gs2d::InputPtr input, EffectManagerPtr fxManager,
+	virtual void Update(gs2d::VideoPtr video, gs2d::InputPtr input, gs2d::AudioPtr audio, EffectManagerPtr fxManager,
 		const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr) = 0;
 	gs2d::math::Vector2 GetPos() const;
 	void AddToPos(const gs2d::math::Vector2& v);
@@ -30,7 +30,7 @@ class Ball : public GameEntity
 
 	int m_lastTouchOwnerId;
 
-	void LockInside(gs2d::VideoPtr video, SpriteResourceManager& spr);
+	void LockInside(gs2d::VideoPtr video, gs2d::AudioPtr audio, SpriteResourceManager& spr);
 
 	class TimeBomb
 	{
@@ -62,7 +62,7 @@ public:
 	void SetLastTouchOwnerId(const int id);
 	int GetTouchOwnerId() const;
 	void Draw(gs2d::VideoPtr video, SpriteResourceManager& spr);
-	void Update(gs2d::VideoPtr video, gs2d::InputPtr input, EffectManagerPtr fxManager,
+	void Update(gs2d::VideoPtr video, gs2d::InputPtr input, gs2d::AudioPtr audio, EffectManagerPtr fxManager,
 		const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr);
 	int GetCurrentArea() const;
 };
@@ -96,7 +96,7 @@ class Pawn : public GameEntity
 	const float m_scorePosOffset;
 
 	void LockInside(SpriteResourceManager& spr, gs2d::VideoPtr video);
-	void DoBallBounce(SpriteResourceManager& spr, gs2d::VideoPtr video);
+	void DoBallBounce(SpriteResourceManager& spr, gs2d::VideoPtr video, gs2d::AudioPtr audio);
 
 public:
 	Pawn(const gs2d::math::Rect2Df &area,
@@ -111,7 +111,7 @@ public:
 	void Draw(gs2d::VideoPtr video, SpriteResourceManager& spr);
 	void DrawGoal(gs2d::VideoPtr video, SpriteResourceManager& spr);
 	void DrawScore(gs2d::VideoPtr video);
-	void Update(gs2d::VideoPtr video, gs2d::InputPtr input, EffectManagerPtr fxManager,
+	void Update(gs2d::VideoPtr video, gs2d::InputPtr input, gs2d::AudioPtr audio, EffectManagerPtr fxManager,
 		const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr);
 	const int m_uniqueId;
 };

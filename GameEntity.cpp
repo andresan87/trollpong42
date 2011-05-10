@@ -1,6 +1,7 @@
 #include "GameEntity.h"
 #include "Controller.h"
 #include "Util.h"
+#include "StateManager.h"
 
 using namespace gs2d;
 using namespace math;
@@ -119,7 +120,7 @@ void Ball::Reset(VideoPtr video)
 	m_timeBomb.Reset();
 }
 
-void Ball::LockInside(VideoPtr video, SpriteResourceManager& spr)
+void Ball::LockInside(VideoPtr video, AudioPtr audio, SpriteResourceManager& spr)
 {
 	const float radius = GetRadius(spr, video);
 	const Vector2 ballSize(radius, radius);
@@ -127,9 +128,15 @@ void Ball::LockInside(VideoPtr video, SpriteResourceManager& spr)
 	const Vector2 max(video->GetScreenSizeF()-ballSize);
 
 	if (m_pos.x < min.x || m_pos.x > max.x)
+	{
+		StateManager::m_aud.GetSample(audio, GS_L("sidehit.mp3"))->Play();
 		m_dir.x *= -1.0f;
+	}
 	if (m_pos.y < min.y || m_pos.y > max.y)
+	{
+		StateManager::m_aud.GetSample(audio, GS_L("sidehit.mp3"))->Play();
 		m_dir.y *= -1.0f;
+	}
 
 	Clamp(m_pos, radius, Rect2Df(Vector2(0,0), video->GetScreenSizeF()));
 }
@@ -157,12 +164,12 @@ void Ball::Draw(VideoPtr video, SpriteResourceManager& spr)
 	video->SetAlphaMode(GSAM_PIXEL);
 }
 
-void Ball::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager,
+void Ball::Update(VideoPtr video, InputPtr input, AudioPtr audio, EffectManagerPtr fxManager,
 				  const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr)
 {
 	m_pos += Normalize(m_dir) * (m_speed/AssertFPS(video));
 	m_angle += (m_speed/AssertFPS(video)) * 49.0f;
-	LockInside(video, spr);
+	LockInside(video, audio, spr);
 	m_timeBomb.Update(this, lastFrameElapsedTimeMS, GetCurrentArea());
 }
 
@@ -239,7 +246,7 @@ void Pawn::DrawScore(VideoPtr video)
 	video->DrawBitmapText(pos, ss.str(), m_scoreFont, GS_BLACK);
 }
 
-void Pawn::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager,
+void Pawn::Update(VideoPtr video, InputPtr input, AudioPtr audio, EffectManagerPtr fxManager,
 				  const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr)
 {
 	if (IsInArea(m_ball->m_pos, m_area, Vector2(0.0f, 0.0f)))
@@ -248,7 +255,7 @@ void Pawn::Update(VideoPtr video, InputPtr input, EffectManagerPtr fxManager,
 	}
 
 	m_controller->Update(this, video, input, fxManager, lastFrameElapsedTimeMS, spr);
-	DoBallBounce(spr, video);
+	DoBallBounce(spr, video, audio);
 	LockInside(spr, video);
 }
 
@@ -272,7 +279,7 @@ float Pawn::GetRadius(SpriteResourceManager& spr, VideoPtr video) const
 	return spr.GetSprite(video, m_sprite)->GetBitmapSizeF().x / 2.0f;
 }
 
-void Pawn::DoBallBounce(SpriteResourceManager& spr, VideoPtr video)
+void Pawn::DoBallBounce(SpriteResourceManager& spr, VideoPtr video, AudioPtr audio)
 {
 	const float radiusSum = GetRadius(spr, video)+m_ball->GetRadius(spr, video);
 	if (SquaredDistance(m_pos, m_ball->m_pos) <= (radiusSum*radiusSum))
@@ -283,6 +290,7 @@ void Pawn::DoBallBounce(SpriteResourceManager& spr, VideoPtr video)
 
 		if (DP2(wallNormal, m_ball->m_dir) < 0)
 		{
+			StateManager::m_aud.GetSample(audio, GS_L("pawnhit.mp3"))->Play();
 			m_ball->m_dir = reflect;
 			m_ball->SetLastTouchOwnerId(m_uniqueId);
 		}
