@@ -31,7 +31,9 @@ void GameState::LoadResources(SpriteResourceManager &spr, VideoPtr video, InputP
 	temp = spr.GetSprite(video, GS_L("ice.jpg"));
 	temp->SetOrigin(Vector2(0.0f, 0.0f));
 
-	temp = spr.GetSprite(video, GS_L("dotted.png"));
+	spr.GetSprite(video, GS_L("dotted.png"));
+	spr.GetSprite(video, GS_L("back.png"), 1, 1);
+	spr.GetSprite(video, GS_L("stripes.png"), 1, 1);
 
 	temp = spr.GetSprite(video, GS_L("pawn.png"));
 	temp->SetOrigin(GSEO_CENTER);
@@ -41,8 +43,6 @@ void GameState::LoadResources(SpriteResourceManager &spr, VideoPtr video, InputP
 
 	temp = spr.GetSprite(video, GS_L("ball_highlight.png"));
 	temp->SetOrigin(GSEO_CENTER);
-
-	temp = spr.GetSprite(video, GS_L("back.png"));
 
 	temp = spr.GetSprite(video, GS_L("goal.png"));
 	temp->SetOrigin(GSEO_CENTER_BOTTOM);
@@ -109,7 +109,7 @@ void GameState::Update(SpriteResourceManager& spr, unsigned long lastFrameDeltaT
 	m_pawnManager->Update(video, input, audio, m_fxManager, lastFrameDeltaTimeMS, spr);
 	m_ball->Update(video, input, audio, m_fxManager, lastFrameDeltaTimeMS, spr);
 	m_zombieManager->Update(spr, video, input, audio, lastFrameDeltaTimeMS, m_fxManager, m_pawnManager);
-	m_backButton.UpdateButton(video, input, spr);
+	m_backButton.UpdateButton(video, input, audio, spr, StateManager::m_aud);
 
 	if (m_backButton.GetStatus() == TouchButton::ACTIVATED)
 	{
@@ -133,7 +133,7 @@ void GameState::Draw(SpriteResourceManager &spr, VideoPtr video, InputPtr input,
 
 	str_type::stringstream ss;
 	ss << video->GetFPSRate();
-	video->DrawBitmapText(Vector2(0,0), ss.str(), GS_L("Verdana20_shadow.fnt"), GS_COLOR(40,255,255,255));
+	video->DrawBitmapText(Vector2(0,0), ss.str(), GS_L("Verdana20_shadow.fnt"), GS_COLOR(100,255,255,255));
 
 	m_backButton.DrawButton(video, input, spr);
 	video->EndSpriteScene();
@@ -145,8 +145,12 @@ void GameState::DrawScenario(VideoPtr video, SpriteResourceManager& spr)
 	const Vector2 halfScreenSize = screenSize/2.0f;
 
 	spr.GetSprite(video, GS_L("ice.jpg"))->DrawShaped(Vector2(0, 0), screenSize, GS_WHITE, GS_WHITE, GS_WHITE, GS_WHITE);
-	m_fxManager->DrawGround(video, spr);
 
-	const GS_COLOR lineColor = GS_COLOR(40,0,0,0);
+	const GS_COLOR stripesColor = GS_COLOR(200, 255, 255, 255);
+	spr.GetSprite(video, GS_L("stripes.png"))->Stretch(Vector2(halfScreenSize.x, 0), Vector2(halfScreenSize.x, screenSize.y), 128, stripesColor, stripesColor);
+
+	const GS_COLOR lineColor = GS_COLOR(70, 0, 0, 0);
 	spr.GetSprite(video, GS_L("dotted.png"))->Stretch(Vector2(halfScreenSize.x, 0), Vector2(halfScreenSize.x, screenSize.y), 22, lineColor, lineColor);
+
+	m_fxManager->DrawGround(video, spr);
 }

@@ -7,7 +7,15 @@
 
 class GameMenu : public State
 {
-	TouchButton m_resumeGame;
+	std::vector<TouchButtonPtr> m_buttons;
+
+	enum BUTTON
+	{
+		NEW_GAME = 0,
+		RESUME_GAME = 1,
+		ABOUT = 2,
+		EXIT = 3
+	};
 
 public:
 	GameMenu();

@@ -16,7 +16,7 @@ inline void DrawShadow(gs2d::VideoPtr video, gs2d::SpritePtr shadowSprite, const
 inline float AssertFPS(gs2d::VideoPtr video)
 {
 	const static float fpsCap = 60.0f;
-	const static float minFps = 30.0f;
+	const static float minFps = 10.0f;
 	const float fps = video->GetFPSRate();
 	if (fps <= 0.0f)
 	{

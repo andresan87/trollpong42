@@ -209,6 +209,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LoadScreen.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\gs2d\src\Platform\main.cpp"
 				>
 			</File>
@@ -280,6 +284,10 @@
 			</File>
 			<File
 				RelativePath=".\GameState.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LoadScreen.h"
 				>
 			</File>
 			<File

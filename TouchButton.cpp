@@ -3,14 +3,16 @@
 using namespace gs2d;
 using namespace gs2d::math;
 
-TouchButton::TouchButton(Vector2 pos, Vector2 origin, gs2d::str_type::string buttonSprite, unsigned int buttonFrame) :
+TouchButton::TouchButton(Vector2 pos, Vector2 origin, gs2d::str_type::string buttonSprite,
+						 unsigned int buttonFrame, gs2d::str_type::string sound) :
 	m_status(IDLE),
-	m_hitPos(-30, -30)
+	m_hitPos(-30, -30),
+	m_soundEffect(sound),
+	m_buttonFrame(buttonFrame),
+	m_buttonSprite(buttonSprite),
+	m_pos(pos),
+	m_origin(origin)
 {
-	m_buttonFrame = buttonFrame;
-	m_buttonSprite = buttonSprite;
-	m_pos = pos;
-	m_origin = origin;
 }
 
 inline Vector2 TouchButton::GetButtonSize(const SpritePtr& sprite)
@@ -23,13 +25,18 @@ inline Vector2 TouchButton::GetButtonSize(const SpritePtr& sprite)
 	return frameSize;
 }
 
-void TouchButton::UpdateButton(VideoPtr video, InputPtr input, SpriteResourceManager& spr)
+void TouchButton::UpdateButton(VideoPtr video, InputPtr input, AudioPtr audio, SpriteResourceManager& spr, AudioResourceManager& aud)
 {
 	SpritePtr sprite = spr.GetSprite(video, m_buttonSprite);
 	const Vector2 frameSize(GetButtonSize(sprite));
 	const Vector2 currentTouch(input->GetTouchPos(0, video));
 	if (input->GetTouchState(0) == GSKS_HIT && currentTouch != GS_NO_TOUCH)
 		m_hitPos = currentTouch;
+
+	if (m_status == SACTIVATED)
+	{
+		m_status = ACTIVATED;
+	}
 
 	if (currentTouch != GS_NO_TOUCH)
 	{
@@ -49,6 +56,10 @@ void TouchButton::UpdateButton(VideoPtr video, InputPtr input, SpriteResourceMan
 		if (IsInArea(m_lastTouch, Rect2Df(m_pos, frameSize), m_origin) && IsInArea(m_hitPos, Rect2Df(m_pos, frameSize), m_origin))
 		{
 			m_status = SACTIVATED;
+			if (m_soundEffect != GS_L(""))
+			{
+				aud.GetSample(audio, m_soundEffect)->Play();
+			}
 		}
 	}
 }
@@ -59,7 +70,7 @@ void TouchButton::DrawButton(VideoPtr video, InputPtr input, SpriteResourceManag
 	video->SetAlphaMode(GSAM_PIXEL);
 	if (sprite)
 	{
-		//sprite->SetRect(m_buttonFrame);
+		sprite->SetRect(m_buttonFrame);
 		sprite->SetOrigin(m_origin);
 		sprite->Draw(m_pos);
 
@@ -67,10 +78,6 @@ void TouchButton::DrawButton(VideoPtr video, InputPtr input, SpriteResourceManag
 		{
 			video->SetAlphaMode(GSAM_ADD);
 			sprite->Draw(m_pos);
-		}
-		else if (m_status == SACTIVATED)
-		{
-			m_status = ACTIVATED;
 		}
 	}
 }

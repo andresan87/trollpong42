@@ -14,10 +14,13 @@ class PawnManager
 
 	void ManageScore(const std::size_t idx, gs2d::VideoPtr video, gs2d::AudioPtr audio, EffectManagerPtr fxManager, SpriteResourceManager& spr);
 
+	static std::vector<gs2d::math::Rect2Df> m_forbiddenAreas;
+
 public:
 	static const int GOAL_SCORE;
 
 	PawnManager(gs2d::VideoPtr video, BallPtr ball);
+	inline static const std::vector<gs2d::math::Rect2Df>& GetForbiddenAreas() { return m_forbiddenAreas; };
 	void Update(gs2d::VideoPtr video, gs2d::InputPtr input, gs2d::AudioPtr audio, EffectManagerPtr fxManager, const unsigned long lastFrameElapsedTimeMS, SpriteResourceManager& spr);
 	void Draw(gs2d::VideoPtr video, SpriteResourceManager& spr);
 	void AddToScore(const int pawn, const int score);

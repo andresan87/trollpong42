@@ -2,6 +2,7 @@
 #include "Controller.h"
 #include "Util.h"
 #include "StateManager.h"
+#include "PawnManager.h"
 
 using namespace gs2d;
 using namespace math;
@@ -214,7 +215,7 @@ Pawn::Pawn(const Rect2Df &area, ControllerPtr controller, BallPtr ball,
 	m_uniqueId(uniqueId),
 	m_score(0),
 	m_scoreFont(GS_L("Arcade80.fnt")),
-	m_scorePosOffset(32.0f),
+	m_scorePosOffset(64.0f),
 	m_shadowSprite(GS_L("shadow.png"))
 {
 	m_pos = Vector2(area.pos + (area.size / 2.0f));
@@ -254,7 +255,7 @@ void Pawn::Update(VideoPtr video, InputPtr input, AudioPtr audio, EffectManagerP
 		m_ball->m_currentArea = m_uniqueId;
 	}
 
-	m_controller->Update(this, video, input, fxManager, lastFrameElapsedTimeMS, spr);
+	m_controller->Update(this, video, input, fxManager, lastFrameElapsedTimeMS, spr, PawnManager::GetForbiddenAreas());
 	DoBallBounce(spr, video, audio);
 	LockInside(spr, video);
 }

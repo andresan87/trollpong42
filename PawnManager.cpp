@@ -5,6 +5,7 @@ using namespace gs2d;
 using namespace gs2d::math;
 
 const int PawnManager::GOAL_SCORE = 10;
+std::vector<gs2d::math::Rect2Df> PawnManager::m_forbiddenAreas;
 
 PawnManager::PawnManager(VideoPtr video, BallPtr ball) :
 	m_explosionSprite(GS_L("explosion.png"))
@@ -26,6 +27,8 @@ PawnManager::PawnManager(VideoPtr video, BallPtr ball) :
 			Vector2(0.0f, 0.5f), id++)
 		)
 	);
+
+	m_forbiddenAreas.push_back(Rect2Df(video->GetScreenSizeF() / 2.0f, Vector2(128.0f, video->GetScreenSizeF().y)));
 	m_ball = ball;
 }
 
