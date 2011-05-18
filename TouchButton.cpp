@@ -78,6 +78,7 @@ void TouchButton::DrawButton(VideoPtr video, InputPtr input, SpriteResourceManag
 		{
 			video->SetAlphaMode(GSAM_ADD);
 			sprite->Draw(m_pos);
+			video->SetAlphaMode(GSAM_PIXEL);
 		}
 	}
 }

@@ -131,11 +131,8 @@ void GameState::Draw(SpriteResourceManager &spr, VideoPtr video, InputPtr input,
 
 	m_fxManager->DrawMain(video, spr);
 
-	str_type::stringstream ss;
-	ss << video->GetFPSRate();
-	video->DrawBitmapText(Vector2(0,0), ss.str(), GS_L("Verdana20_shadow.fnt"), GS_COLOR(100,255,255,255));
-
 	m_backButton.DrawButton(video, input, spr);
+	DrawFPSRate(video);
 	video->EndSpriteScene();
 }
 

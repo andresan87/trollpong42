@@ -1,6 +1,7 @@
 #include "GameMenu.h"
 #include "GameState.h"
 #include "LoadScreen.h"
+#include "AboutState.h"
 
 using namespace gs2d;
 using namespace gs2d::math;
@@ -65,9 +66,11 @@ void GameMenu::Update(SpriteResourceManager &spr, unsigned long lastFrameDeltaTi
 				break;
 
 			case ABOUT:
+				StateManager::SetState(StatePtr(new AboutState));
 				break;
 
 			case EXIT:
+				video->Quit();
 				break;
 			};
 			m_buttons[t]->SetStatus(TouchButton::IDLE);
@@ -88,5 +91,6 @@ void GameMenu::Draw(SpriteResourceManager &spr, VideoPtr video, InputPtr input, 
 	{
 		m_buttons[t]->DrawButton(video, input, spr);
 	}
+	DrawFPSRate(video);
 	video->EndSpriteScene();
 }

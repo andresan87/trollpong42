@@ -3,6 +3,13 @@
 
 #include "../gs2d/src/gs2dframework.h"
 
+inline void DrawFPSRate(gs2d::VideoPtr video)
+{
+	gs2d::str_type::stringstream ss;
+	ss << video->GetFPSRate();
+	video->DrawBitmapText(gs2d::math::Vector2(0,0), ss.str(), GS_L("Verdana20_shadow.fnt"), gs2d::GS_COLOR(100,255,255,255));
+}
+
 inline void DrawShadow(gs2d::VideoPtr video, gs2d::SpritePtr shadowSprite, const gs2d::math::Vector2& pos, const float radius)
 {
 	const gs2d::GS_ALPHA_MODE am = video->GetAlphaMode();
