@@ -80,12 +80,12 @@ Ball::Ball(VideoPtr video) :
 	m_sprite(GS_L("ball.png")),
 	m_highlight(GS_L("ball_highlight.png")),
 	m_dir(0, 0),
-	m_speed(300.0f),
 	m_lastTouchOwnerId(-1),
 	m_shadowSprite(GS_L("shadow.png")),
 	m_currentArea(-1)
 {
 	m_pos = video->GetScreenSizeF()/2.0f;
+	m_speed = 450.0f * (video->GetScreenSizeF().SquaredLength() / Vector2(854.0f, 480.0f).SquaredLength());
 }
 
 void Ball::SetLastTouchOwnerId(const int id)
