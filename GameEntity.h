@@ -90,7 +90,7 @@ class Pawn : public GameEntity
 	gs2d::str_type::string m_sprite, m_shadowSprite;
 	boost::shared_ptr<Controller> m_controller;
 	BallPtr m_ball;
-	int m_score;
+	float m_score;
 
 	const gs2d::str_type::string m_scoreFont;
 	const float m_scorePosOffset;
@@ -106,7 +106,7 @@ public:
 	float GetRadius(SpriteResourceManager& spr, gs2d::VideoPtr video) const;
 	bool GoalScored(gs2d::VideoPtr video, SpriteResourceManager& spr) const;
 	int GetScore() const;
-	void AddToScore(const int score);
+	void AddToScore(const float score);
 	void SetScore(const int score);
 	void Draw(gs2d::VideoPtr video, SpriteResourceManager& spr);
 	void DrawGoal(gs2d::VideoPtr video, SpriteResourceManager& spr);

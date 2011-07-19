@@ -75,7 +75,7 @@ void ZombieManager::CheckZombieStatus(SpriteResourceManager& spr, ZombiePtr zomb
 	{
 		StateManager::m_aud.GetSample(audio, GS_L("zombiedeath.ogg"))->Play();
 		zombie->Kill();
-		pawnManager->AddToScore(m_ball->GetTouchOwnerId(), 1);
+		pawnManager->AddToScore(m_ball->GetTouchOwnerId(), 0.5f);
 
 		fxManager->Add(TemporaryEffectPtr(new SingleParticle(video, GS_L("blood01.png"), zombie->GetPos(), 0.0f, 400, 0.0f,
 					   Vector2(128, 128), 1.0f, false, false, 0.0f)));

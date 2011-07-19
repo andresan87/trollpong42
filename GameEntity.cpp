@@ -265,7 +265,7 @@ int Pawn::GetScore() const
 	return m_score;
 }
 
-void Pawn::AddToScore(const int score)
+void Pawn::AddToScore(const float score)
 {
 	m_score += score;
 }

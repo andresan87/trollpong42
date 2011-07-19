@@ -4,7 +4,7 @@
 using namespace gs2d;
 using namespace gs2d::math;
 
-const int PawnManager::GOAL_SCORE = 10;
+const float PawnManager::GOAL_SCORE = 10;
 std::vector<gs2d::math::Rect2Df> PawnManager::m_forbiddenAreas;
 
 PawnManager::PawnManager(VideoPtr video, BallPtr ball) :
@@ -51,7 +51,7 @@ void PawnManager::Update(VideoPtr video, InputPtr input, AudioPtr audio, EffectM
 	}
 }
 
-void PawnManager::AddToScore(const int pawn, const int score)
+void PawnManager::AddToScore(const int pawn, const float score)
 {
 	if (pawn >= 0)
 	{
